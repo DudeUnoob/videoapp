@@ -7,6 +7,8 @@
 
         <form action="/upload/video" method="post" enctype="multipart/form-data">
             <input type="file" id="fileData" name="fileData" accept="video/mp4"/>
+            <input type="text" name="title" required placeholder="title"/>
+            <input type="file" name="thumbnail" required placeholder="thumbnail" accept="image/*"/>
             <input  type="submit"/>
             
         </form>

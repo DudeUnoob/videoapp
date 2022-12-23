@@ -1,14 +1,33 @@
 <html>
     <head>
+        <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+        
         <style>
             video {
-              max-height: 750px;
+                width: max-content;
+                height: max-content;
+            }
+
+            div.center {
+                text-align: center;
             }
         </style>
     </head>
     <body>
-        <video playsinline autoplay controls >
-            <source src="<%= videoId %>">
-        </video>
+        
+        <div class="center">
+            <h1><%= title %></h1>
+        <video
+   controls
+   autoplay
+   playsinline
+   poster="<%= thumbnail %>"
+  >
+    <source src="<%= videoId %>"  />
+    
+   
+  </video>
+</div>
+      
     </body>
 </html>

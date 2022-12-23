@@ -5,7 +5,9 @@ mongoose.connect("mongodb+srv://ZeroX:Balaram26@cluster0.b2lzi.mongodb.net/Roast
 
 let Schema = new mongoose.Schema({
     videoId: String,
-    user: String
+    user: String,
+    thumbnail: String,
+    title: String
 })
 
 

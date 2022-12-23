@@ -39,7 +39,18 @@ app.get('/upload', (req, res) => {
 })
 
 app.get('/', (req, res) => {
+  if(req.session.username){
+    return res.status(200).send(
+      "<a href=/upload>Upload a video!</a>"
+    )
+  }
   res.send("<a href=/login>Login</a><br><br /><a href=/signup>Signup</a>")
+})
+
+app.get('/logout', (req, res) => {
+  req.session.destroy()
+
+  res.send("logged out")
 })
 
 app.get('/signup', (req, res) => {
@@ -47,6 +58,9 @@ app.get('/signup', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
+  if(req.session.username){
+    return res.status(400).send("Already logged in")
+  }
   res.render('login')
 })
 
@@ -101,11 +115,14 @@ app.post("/upload/video", async(req, res) => {
     return res.status(400).send("Not logged in")
   }
   const fileObject = req.files.fileData
-  
+  const title = req.body.title
+  const thumbnail = req.files.thumbnail
+  const thumbnailbase64 = Buffer.from(thumbnail.data).toString('base64')
+  const customUUID = uuidv4()
   const metaData = {
     contentType: fileObject.mimetype,
     customMetadata:{
-      videoId: uuidv4(),
+      videoId: customUUID,
       size: fileObject.size,
       name: fileObject.name,
       user: req.session.username
@@ -113,11 +130,12 @@ app.post("/upload/video", async(req, res) => {
     name: fileObject.name
   }
 
-  const videoRefData = ref(storage, `videos/${uuidv4()}`)
+  const videoRefData = ref(storage, `videos/${customUUID}`)
 
   new usersVideos({
-    videoId: uuidv4(),
-    user: req.session.username
+    videoId: customUUID,
+    user: req.session.username,
+    thumbnail: `data:${thumbnail.mimetype};base64,${thumbnailbase64}`
   }).save()
 
   uploadBytes(videoRefData, fileObject.data, metaData).then((snapshot) => {
@@ -128,8 +146,9 @@ app.post("/upload/video", async(req, res) => {
 })
 
 app.get('/video/:videoId', async(req, res) => {
-  
-  res.render('room', { videoId: videoStreamingUrl + req.params.videoId + "?alt=media" })
+  const getThumbnail = await usersVideos.findOne({ videoId: req.params.videoId }).distinct('thumbnail')
+  const getTitle = await usersVideos.findOne({ videoId: req.params.videoId }).distinct('title')
+  res.render('room', { videoId: videoStreamingUrl + req.params.videoId + "?alt=media", thumbnail: getThumbnail, title: getTitle })
 
 })
 
