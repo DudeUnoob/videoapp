@@ -39,12 +39,22 @@ app.get('/upload', (req, res) => {
 })
 
 app.get('/', (req, res) => {
-  if(req.session.username){
-    return res.status(200).send(
-      "<a href=/upload>Upload a video!</a>"
-    )
+  
+  usersVideos.find({}, async(err, data) => {
+    res.render('home', {
+      title: data
+    })
+  })
+})
+
+app.get('/user/myvideos', async(req, res) => {
+  if(!req.session.username){
+    return res.status(400).send("You are not <a href=/login>logged in</a>")
   }
-  res.send("<a href=/login>Login</a><br><br /><a href=/signup>Signup</a>")
+  
+  const listUsersVideos = await usersVideos.find({ user: req.session.username }).select('title videoId')
+  
+  res.render('myVideos', { data: listUsersVideos })
 })
 
 app.get('/logout', (req, res) => {
@@ -59,7 +69,7 @@ app.get('/signup', (req, res) => {
 
 app.get('/login', (req, res) => {
   if(req.session.username){
-    return res.status(400).send("Already logged in")
+    return res.redirect('/logout')
   }
   res.render('login')
 })
@@ -135,7 +145,8 @@ app.post("/upload/video", async(req, res) => {
   new usersVideos({
     videoId: customUUID,
     user: req.session.username,
-    thumbnail: `data:${thumbnail.mimetype};base64,${thumbnailbase64}`
+    thumbnail: `data:${thumbnail.mimetype};base64,${thumbnailbase64}`,
+    title: title
   }).save()
 
   uploadBytes(videoRefData, fileObject.data, metaData).then((snapshot) => {
@@ -154,15 +165,20 @@ app.get('/video/:videoId', async(req, res) => {
 
 app.get('/videos', async(req, res) => {
   const array = []
-  listAll(videoRef)
-    .then((videos) => {
-      videos.items.forEach((item) => {
-        array.push(item._location.path_)
+
+  usersVideos.find({}, async(err, data) => {
+    console.log(data)
+    res.render('videos', { data: data })
+  })
+  // listAll(videoRef)
+  //   .then((videos) => {
+  //     videos.items.forEach((item) => {
+  //       array.push(item._location.path_)
 
         
-      })
-      res.render('videos', { data: array })
-    })
+  //     })
+  //     res.render('videos', { data: array })
+  //   })
     
 })
 

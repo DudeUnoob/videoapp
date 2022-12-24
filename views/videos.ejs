@@ -3,7 +3,7 @@
     <body>
         <h1>All the videos on the platform</h1>
         <% data.forEach(elm => { %>
-            <a href=/video/<%= elm.slice(7) %>><%= elm.slice(7) %></a>
+            <a href=/video/<%= elm.videoId %>><%= elm.title %></a>
             <br />
             <br />
         <% }) %>

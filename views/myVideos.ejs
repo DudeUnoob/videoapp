@@ -1,0 +1,11 @@
+<html>
+    <head></head>
+    <body>
+        <h1>Your Videos</h1>
+        <% data.forEach(vid => { %>
+            <a href="/video/<%= vid.videoId %>"><%= vid.title %></a>
+            <br />
+            <br />
+        <% }) %>
+    </body>
+</html>
