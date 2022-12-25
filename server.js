@@ -3,7 +3,7 @@ const app = express();
 const server = require("http").Server(app);
 const { v4: uuidv4 } = require("uuid");
 const { firebaseApp, firebaseStorage } = require("./config/fireBaseConfig")
-const { getStorage, ref, uploadBytes, listAll, getDownloadURL } = require("firebase/storage")
+const { getStorage, ref, uploadBytes, listAll, getDownloadURL, deleteObject } = require("firebase/storage")
 const storage = getStorage()
 const bodyParser = require("body-parser")
 const expressUpload = require("express-fileupload")
@@ -12,15 +12,20 @@ const videoStreamingUrl = `https://firebasestorage.googleapis.com/v0/b/video-app
 const session = require("express-session")
 const bcrypt = require("bcrypt")
 const usersVideos = require("./models/usersVideo");
-const { reset } = require("nodemon");
+const router = require("./routes/videoRouter")
 
 app.use(session({
   secret:"videoApp",
   resave:false,
   saveUninitialized:false
 }))
+
+app.use('/user', router)
 //const userDataBaseCollection = collection()
+app.use(express.json())
+app.use(express.urlencoded())
 app.use(bodyParser.json())
+const parsing = bodyParser.json()
 
 app.use(bodyParser.urlencoded({ extended: true }))
 //app.use(upload.array())
@@ -32,7 +37,7 @@ const saltRounds = 10;
 
 app.get('/upload', (req, res) => {
   if(!req.session.username){
-    return res.status(400).send("Not logged in")
+    return res.status(400).send("Not <a href=/login>logged in</a>")
   }
 
   res.render('index')
@@ -52,7 +57,7 @@ app.get('/user/myvideos', async(req, res) => {
     return res.status(400).send("You are not <a href=/login>logged in</a>")
   }
   
-  const listUsersVideos = await usersVideos.find({ user: req.session.username }).select('title videoId')
+  const listUsersVideos = await usersVideos.find({ user: req.session.username })
   
   res.render('myVideos', { data: listUsersVideos })
 })
@@ -60,7 +65,7 @@ app.get('/user/myvideos', async(req, res) => {
 app.get('/logout', (req, res) => {
   req.session.destroy()
 
-  res.send("logged out")
+  res.redirect('/')
 })
 
 app.get('/signup', (req, res) => {
@@ -83,11 +88,11 @@ app.post('/user/login', async(req, res) => {
         if(result == true){
           req.session.username = username
           req.session.email = data.email
-          return res.status(200).send("Successfully logged in")
+          return res.redirect('/')
         }
       })
     } else {
-      return res.status(400).send("Incorrect credentials")
+      return res.status(400).send("Incorrect <a href=/login>credentials</a>")
     }
   })
 })
@@ -112,7 +117,7 @@ app.post('/user/signup', async(req, res) => {
         req.session.username = username
         req.session.email = email
 
-        res.send("Successfully created user")
+        res.redirect('/')
       })
      })
     }
@@ -122,11 +127,16 @@ app.post('/user/signup', async(req, res) => {
 
 app.post("/upload/video", async(req, res) => {
   if(!req.session.username) {
-    return res.status(400).send("Not logged in")
+    return res.status(400).send("Not <a href=/login>logged in</a>")
   }
+
+  
   const fileObject = req.files.fileData
   const title = req.body.title
   const thumbnail = req.files.thumbnail
+  if(thumbnail.size > 8000000){
+    return res.status(400).send("Sorry, the thumbnail picture is above 8 megabytes!")
+  }
   const thumbnailbase64 = Buffer.from(thumbnail.data).toString('base64')
   const customUUID = uuidv4()
   const metaData = {
@@ -150,7 +160,7 @@ app.post("/upload/video", async(req, res) => {
   }).save()
 
   uploadBytes(videoRefData, fileObject.data, metaData).then((snapshot) => {
-    res.send("successfully uploaded the video")
+    res.redirect('/user/myvideos')
   })
 
   
@@ -170,16 +180,30 @@ app.get('/videos', async(req, res) => {
     console.log(data)
     res.render('videos', { data: data })
   })
-  // listAll(videoRef)
-  //   .then((videos) => {
-  //     videos.items.forEach((item) => {
-  //       array.push(item._location.path_)
+  listAll(videoRef)
+    .then((videos) => {
+      videos.items.forEach((item) => {
+        array.push(item._location.path_)
 
         
-  //     })
-  //     res.render('videos', { data: array })
-  //   })
+      })
+      res.render('videos', { data: array })
+    })
     
+})
+
+app.post('/video/delete',  async(req, res) => {
+  const videoId = req.body.videoId
+  console.log(videoId)
+  const videoRefData = ref(storage, `videos/${videoId}`)
+
+  deleteObject(videoRefData).then(async() => {
+    await usersVideos.findOneAndRemove({ videoId: videoId })
+    res.status(200).send("Successfully deleted video")
+    
+  }).catch((error) => {
+    res.status(400).send({ error: error, message:"Your video was not found?"})
+  })
 })
 
 app.listen(3000, () => {

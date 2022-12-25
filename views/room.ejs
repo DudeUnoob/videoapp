@@ -1,11 +1,13 @@
 <html>
     <head>
-        <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+       <title><%= title %></title>
         
         <style>
             video {
-                width: fit-content;
-                height: fit-content;
+               
+                object-fit: cover;
+                aspect-ratio: 16 / 9;
+                background: transparent url("<%= thumbnail %>") 50% 50% / cover no-repeat;
             }
 
             div.center {
@@ -21,7 +23,7 @@
    controls
    autoplay
    playsinline
-   poster="<%= thumbnail %>"
+   
   >
     <source src="<%= videoId %>"  />
     
