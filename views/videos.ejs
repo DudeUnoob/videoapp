@@ -1,11 +1,50 @@
 <html>
-    <head></head>
+    <head>
+        <style>
+            @import url("https://fonts.googleapis.com");
+        @import url("https://fonts.gstatic.com");
+        @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=Ubuntu:wght@500&display=swap");
+
+        
+        * {
+            font-family: 'Fredoka One';
+        }
+
+        .cards {
+            display: grid;
+            column-gap: 50px;
+            row-gap: 100px;
+            grid-template-columns: auto auto auto auto;
+
+        }
+
+        .card {
+            cursor: pointer;
+            border-radius: 12px;
+            border: 2px solid black;
+          
+
+        }
+        .container {
+            padding: 10px;
+        }
+        </style>
+    </head>
     <body>
         <h1>All the videos on the platform</h1>
+        <div class="cards">
         <% data.forEach(elm => { %>
-            <a href=/video/<%= elm.videoId %>><%= elm.title %></a>
+            <div class="card" onclick="window.location.href = '/video/<%= elm.videoId %>'">
+                <div class="container">
+            <a><%= elm.title %></a>
             <br />
             <br />
+            <img src="<%= elm.thumbnail %>" style="max-height: 150px;"/>
+            <p>By: <%= elm.user %></p>
+            
+        </div>
+        </div>
         <% }) %>
+    </div>
     </body>
 </html>

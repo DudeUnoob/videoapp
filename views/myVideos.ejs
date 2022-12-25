@@ -1,46 +1,107 @@
 <html>
-    <head></head>
-    <body>
-        <h1>Your Videos</h1>
-        <% data.forEach(vid => { %>
-            <div  style="cursor: pointer; border-style: solid;padding: 5px;" onclick="window.location.href = '/video/<%= vid.videoId %>'">
-            <a ><%= vid.title %></a>
-            <br />
-            <br />
-            <img src="<%= vid?.thumbnail %>" style="max-height: 200px; border-radius: 12px;" onclick="window.location.href = '/video/<%= vid.videoId %>'"/>
-            <button type="button" onclick="deleteVideo('<%= vid.videoId %>')">Delete</button>
-        </div>
+
+<head>
+
+    <style>
+         @import url("https://fonts.googleapis.com");
+        @import url("https://fonts.gstatic.com");
+        @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=Ubuntu:wght@500&display=swap");
+
         
+        * {
+            font-family: 'Fredoka One';
+        }
+        .cards {
+            display: grid;
+            column-gap: 50px;
+            row-gap: 100px;
+            grid-template-columns: auto auto auto auto;
+
+        }
+
+        .card {
+            cursor: pointer;
+            border-radius: 12px;
+            border: 2px solid black;
+          
+
+        }
+        .container {
+            padding: 10px;
+        }
+        #delete-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 15px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: red;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 0px #999;
+        }
+
+        #delete-btn:hover {
+            color: black;
+            
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Your Videos</h1>
+    <div class="cards">
+        <% data.forEach(vid=> { %>
+            <div onclick="window.location.href = '/video/<%= vid.videoId %>'" class="card" style="cursor:pointer;">
+                <div class="container">
+                <a>
+                    <%= vid.title %>
+                </a>
+                <br />
+                <br />
+                <img src="<%= vid?.thumbnail %>" style="max-height: 150px; border-radius: 12px;"
+                    onclick="window.location.href = '/video/<%= vid.videoId %>'" />
+                <button type="button" onclick="deleteVideo(event,'<%= vid.videoId %>')" id="delete-btn">Delete</button>
+            </div>
+            </div>
+
             <br />
-        <% }) %>
+            <% }) %>
 
-        <script>
-            const btn = document.querySelector("button")
+    </div>
 
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation()
-            })
-            function deleteVideo(videoId){
-                let text;
-                
-                if(confirm("Are you sure you want to delete this video?") == true){
-                    fetch('/video/delete', {
-                        method:"post",
-                        body:JSON.stringify({
-                            videoId: videoId
-                        }),
-                        headers:{
-                           
-                           'Content-Type':"application/json"
-                        }
-                    }).then((res) => {
-                        window.location.reload()
-                    })
-                        
-                } else {
-                    console.log("didnt delete the video")
-                }
+    <script>
+        const btn = document.querySelector("button")
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation()
+        })
+        function deleteVideo(event, videoId) {
+            let text;
+
+            if (confirm("Are you sure you want to delete this video?") == true) {
+                fetch('/video/delete', {
+                    method: "post",
+                    body: JSON.stringify({
+                        videoId: videoId
+                    }),
+                    headers: {
+
+                        'Content-Type': "application/json"
+                    }
+                }).then((res) => {
+                    window.location.reload()
+                })
+
+            } else {
+                event.stopPropagation()
+                console.log("didnt delete the video")
             }
-        </script>
-    </body>
+        }
+    </script>
+</body>
+
 </html>

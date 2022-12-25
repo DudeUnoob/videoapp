@@ -177,18 +177,18 @@ app.get('/videos', async(req, res) => {
   const array = []
 
   usersVideos.find({}, async(err, data) => {
-    console.log(data)
+    
     res.render('videos', { data: data })
   })
-  listAll(videoRef)
-    .then((videos) => {
-      videos.items.forEach((item) => {
-        array.push(item._location.path_)
+  // listAll(videoRef)
+  //   .then((videos) => {
+  //     videos.items.forEach((item) => {
+  //       array.push(item._location.path_)
 
         
-      })
-      res.render('videos', { data: array })
-    })
+  //     })
+  //     res.render('videos', { data: array })
+  //   })
     
 })
 
