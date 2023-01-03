@@ -13,6 +13,8 @@ const session = require("express-session")
 const bcrypt = require("bcrypt")
 const usersVideos = require("./models/usersVideo");
 const router = require("./routes/videoRouter")
+const Mux = require("@mux/mux-node")
+const { Video } = new Mux("10a2b6f9-9be4-449c-b792-45db56f89a60","l86I/7emeW777FGXSfhSSZP+k464yyT9dimWFBYdlVZWH2rz54cgj1dl8YNvGgBKo2XXofvoPYt")
 
 app.use(session({
   secret:"videoApp",
@@ -204,6 +206,44 @@ app.post('/video/delete',  async(req, res) => {
   }).catch((error) => {
     res.status(400).send({ error: error, message:"Your video was not found?"})
   })
+})
+
+
+app.get("/livestream", async(req, res) => {
+
+  if(!req.session.username){
+    return res.status(400).send("You are not logged in")
+  }
+  await Video.LiveStreams.create({
+    playback_policy: 'public',
+    new_asset_settings: { playback_policy: 'public' }
+}).then(response => {
+  req.session.stream_key = response.stream_key
+  req.session.playback_id = response.playback_ids[0].id
+
+  req.session.streamName = {
+    streamKey: response.stream_key,
+    playbackId: response.playback_ids[0].id
+  }
+  
+  res.json({ streamKey: response.stream_key, playbackId: response.playback_ids[0].id })
+})
+
+
+})
+
+
+app.get(`/livestream/:live`, (req, res) => {
+  // if(!req.session.username){
+  //   return res.status(400).send("You are not logged in")
+  // }
+  // } else {
+  //   if(!req.session.stream_key){
+  //   return res.status(400).send("You haven't received a streamkey")
+  // }
+  // }
+  
+  res.render('livestream', { streamKey: req.session.stream_key, playbackId: req.params.live })
 })
 
 app.listen(3000, () => {

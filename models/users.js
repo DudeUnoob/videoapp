@@ -7,7 +7,9 @@ let Schema = new mongoose.Schema({
     username:String,
     password:String,
     email:String,
-    videos: Array
+    videos: Array,
+    streamKey:String,
+    playbackId: String
     
 })
 
