@@ -9,7 +9,7 @@ let Schema = new mongoose.Schema({
     email:String,
     videos: Array,
     streamKey:String,
-    playbackId: String
+    playbackId: String,
     
 })
 
