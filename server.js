@@ -16,6 +16,8 @@ const router = require("./routes/videoRouter")
 const Mux = require("@mux/mux-node")
 const { Video } = new Mux("10a2b6f9-9be4-449c-b792-45db56f89a60","l86I/7emeW777FGXSfhSSZP+k464yyT9dimWFBYdlVZWH2rz54cgj1dl8YNvGgBKo2XXofvoPYt")
 
+
+
 app.use(session({
   secret:"videoApp",
   resave:false,
@@ -233,7 +235,7 @@ app.get("/livestream", async(req, res) => {
     if(data.playbackId){
       return res.redirect(`/livestream/${req.session.username}`);
     } else {
-      UsersDb.updateOne({ username: req.session.username }, { playbackId: response.playback_ids[0].id }).then((object) => console.log(object))
+      UsersDb.updateOne({ username: req.session.username }, { playbackId: response.playback_ids[0].id, streamKey: response.stream_key }).then((object) => console.log(object))
       
       res.json({ message:"copy the streamkey into your broadcasting software with the server being: rtmp://global-live.mux.com:5222/app" ,streamKey: response.stream_key, playbackId: response.playback_ids[0].id })
     }
@@ -265,6 +267,42 @@ app.get(`/livestream/:live`, async(req, res) => {
   
   
 })
+const userString = `10a2b6f9-9be4-449c-b792-45db56f89a60`
+const passString = `l86I/7emeW777FGXSfhSSZP+k464yyT9dimWFBYdlVZWH2rz54cgj1dl8YNvGgBKo2XXofvoPYt`
+
+
+app.get(`/livestreams`, async(req, res) => {
+  
+
+  // async function getData() {
+  //   const response = await fetch('https://api.mux.com/video/v1/live-streams', {
+  //     headers: {
+  //       'Authorization': 'Basic ' + btoa(`${userString}:${passString}`)
+  //     }
+  //   });
+  //   const data = await response.json();
+    
+  //   const filter = data.map((elm) => {
+  //     console.log(elm)
+  //   })
+
+  //   res.send(data)
+  // }
+  
+  // getData();
+
+  fetch('https://api.mux.com/video/v1/live-streams', {
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${userString}:${passString}`)
+      }
+    }).then(response => response.json()).then(data => {
+      const filter = data.data.filter(elm => elm.status != "idle" && elm.status != "disabled")
+      console.log(filter)
+      res.send(filter)
+    })
+
+})
+
 
 app.listen(3000, () => {
   console.log("server is online")
