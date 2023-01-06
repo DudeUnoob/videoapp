@@ -231,15 +231,12 @@ app.get("/livestream", async(req, res) => {
   //   usersVideos.findOneAndUpdate({ username: req.session.username }, { playbackId: response.playback_ids[0].id })
   // }
 
-  UsersDb.findOne({ username: req.session.username }, async(err, data) => {
-    if(data.playbackId){
-      return res.redirect(`/livestream/${req.session.username}`);
-    } else {
+ 
+    
       UsersDb.updateOne({ username: req.session.username }, { playbackId: response.playback_ids[0].id, streamKey: response.stream_key }).then((object) => console.log(object))
       
       res.json({ message:"copy the streamkey into your broadcasting software with the server being: rtmp://global-live.mux.com:5222/app" ,streamKey: response.stream_key, playbackId: response.playback_ids[0].id })
-    }
-  })
+ 
   
  
 })
